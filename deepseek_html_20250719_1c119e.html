@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Topup With Saion</title>
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --success: #4CAF50;
+            --danger: #F44336;
+            --warning: #FF9800;
+            --dark: #222;
+            --light: #f8f9fa;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 15px 15px;
+            margin-bottom: 30px;
+        }
+        .admin-nav {
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .nav-btn {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        .btn-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        .status-pending {
+            color: var(--warning);
+            font-weight: 600;
+        }
+        .status-approved {
+            color: var(--success);
+            font-weight: 600;
+        }
+        .status-rejected {
+            color: var(--danger);
+            font-weight: 600;
+        }
+        .search-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .search-filter input, 
+        .search-filter select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            flex: 1;
+        }
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Admin Panel - Topup With Saion</h1>
+        <p>Manage deposits, topups, and users</p>
+    </header>
+
+    <div class="container">
+        <div class="admin-nav">
+            <button class="nav-btn active" onclick="showTab('dashboard')">ড্যাশবোর্ড</button>
+            <button class="nav-btn" onclick="showTab('deposits')">ডিপোজিট রিকোয়েস্ট</button>
+            <button class="nav-btn" onclick="showTab('topups')">টপআপ রিকোয়েস্ট</button>
+            <button class="nav-btn" onclick="showTab('users')">ব্যবহারকারী</button>
+            <button class="nav-btn" onclick="showTab('settings')">সেটিংস</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboardTab" class="tab-content active">
+            <div class="stats-cards">
+                <div class="stat-card">
+                    <h3>মোট ব্যবহারকারী</h3>
+                    <div class="value" id="totalUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>পেন্ডিং ডিপোজিট</h3>
+                    <div class="value" id="pendingDeposits">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>আজকের টপআপ</h3>
+                    <div class="value" id="todayTopups">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>মোট আয়</h3>
+                    <div class="value" id="totalEarnings">৳ 0</div>
+                </div>
+            </div>
+
+            <h2>সাম্প্রতিক লেনদেন</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>তারিখ</th>
+                        <th>ব্যবহারকারী</th>
+                        <th>টাইপ</th>
+                        <th>পরিমাণ</th>
+                        <th>স্ট্যাটাস</th>
+                    </tr>
+                </thead>
+                <tbody id="recentTransactions">
+                    <!-- Transactions will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Deposit Requests Tab -->
+        <div id="depositsTab" class="tab-content">
+            <div class="search-filter">
+                <input type="text" id="depositSearch" placeholder="সার্চ...">
+                <select id="depositFilter">
+                    <option value="all">সব স্ট্যাটাস</option>
+                    <option value="pending">পেন্ডিং</option>
+                    <option value="approved">অ্যাপ্রুভড</option>
+                    <option value="rejected">রিজেক্টেড</option>
+                </select>
+                <button class="btn btn-success" onclick="filterDeposits()">ফিল্টার</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>আইডি</th>
+                        <th>ব্যবহারকারী</th>
+                        <th>পেমেন্ট মেথড</th>
+                        <th>পরিমাণ</th>
+                        <th>ট্রানজেকশন আইডি</th>
+                        <th>তারিখ</th>
+                        <th>স্ট্যাটাস</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody id="depositRequests">
+                    <!-- Deposit requests will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Topup Requests Tab -->
+        <div id="topupsTab" class="tab-content">
+            <div class="search-filter">
+                <input type="text" id="topupSearch" placeholder="সার্চ ব্যবহারকারী বা UID...">
+                <select id="topupFilter">
+                    <option value="all">সব স্ট্যাটাস</option>
+                    <option value="pending">পেন্ডিং</option>
+                    <option value="completed">সম্পূর্ণ</option>
+                    <option value="failed">ব্যর্থ</option>
+                </select>
+                <button class="btn btn-success" onclick="filterTopups()">ফিল্টার</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>আইডি</th>
+                        <th>ব্যবহারকারী</th>
+                        <th>UID</th>
+                        <th>ডায়মন্ড</th>
+                        <th>পরিমাণ</th>
+                        <th>তারিখ</th>
+                        <th>স্ট্যাটাস</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody id="topupRequests">
+                    <!-- Topup requests will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="usersTab" class="tab-content">
+            <div class="search-filter">
+                <input type="text" id="userSearch" placeholder="সার্চ ব্যবহারকারী...">
+                <button class="btn btn-success" onclick="searchUsers()">সার্চ</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>আইডি</th>
+                        <th>নাম</th>
+                        <th>ইমেইল</th>
+                        <th>ফ্রি ফায়ার UID</th>
+                        <th>ব্যালেন্স</th>
+                        <th>রেজিস্ট্রেশন তারিখ</th>
+                        <th>অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody id="usersList">
+                    <!-- Users will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settingsTab" class="tab-content">
+            <h2>সিস্টেম সেটিংস</h2>
+            <div class="form-group">
+                <label for="siteName">সাইট নাম</label>
+                <input type="text" id="siteName" value="Topup With Saion" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="adminEmail">অ্যাডমিন ইমেইল</label>
+                <input type="email" id="adminEmail" value="admin@topupwithsaion.com" class="form-control">
+            </div>
+            <div class="form-group">
+                <label for="paymentNumber">পেমেন্ট নাম্বার</label>
+                <input type="text" id="paymentNumber" value="01911276328" class="form-control">
+            </div>
+            <button class="btn btn-primary" onclick="saveSettings()">সেটিংস সেভ করুন</button>
+        </div>
+    </div>
+
+    <script>
+        // Load data from localStorage
+        let users = JSON.parse(localStorage.getItem('topup_users')) || [];
+        let transactions = JSON.parse(localStorage.getItem('topup_transactions')) || [];
+        let settings = JSON.parse(localStorage.getItem('topup_settings')) || {
+            siteName: "Topup With Saion",
+            adminEmail: "admin@topupwithsaion.com",
+            paymentNumber: "01911276328"
+        };
+
+        // Initialize admin panel
+        function initAdminPanel() {
+            updateStats();
+            loadRecentTransactions();
+            loadDepositRequests();
+            loadTopupRequests();
+            loadUsers();
+            loadSettings();
+        }
+
+        // Update dashboard stats
+        function updateStats() {
+            document.getElementById('totalUsers').textContent = users.length;
+            
+            const pendingDeposits = transactions.filter(t => 
+                t.type === 'deposit' && t.status === 'pending'
+            ).length;
+            document.getElementById('pendingDeposits').textContent = pendingDeposits;
+            
+            const today = new Date().toLocaleDateString();
+            const todayTopups = transactions.filter(t => 
+                t.type === 'topup' && 
+                new Date(t.date).toLocaleDateString() === today
+            ).length;
+            document.getElementById('todayTopups').textContent = todayTopups;
+            
+            const totalEarnings = transactions
+                .filter(t => t.type === 'topup')
+                .reduce((sum, t) => sum + t.amount, 0);
+            document.getElementById('totalEarnings').textContent = `৳ ${totalEarnings}`;
+        }
+
+        // Load recent transactions
+        function loadRecentTransactions() {
+            const recent = transactions.slice(0, 5).reverse();
+            const tbody = document.getElementById('recentTransactions');
+            tbody.innerHTML = recent.map(t => `
+                <tr>
+                    <td>${t.date}</td>
+                    <td>${getUserEmail(t.userId)}</td>
+                    <td>${t.type === 'deposit' ? 'ডিপোজিট' : 'টপআপ'}</td>
+                    <td>৳ ${t.amount}</td>
+                    <td class="status-${t.status}">${t.status}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Load deposit requests
+        function loadDepositRequests(filter = 'all') {
+            let deposits = transactions.filter(t => t.type === 'deposit');
+            
+            if(filter !== 'all') {
+                deposits = deposits.filter(t => t.status === filter);
+            }
+            
+            const tbody = document.getElementById('depositRequests');
+            tbody.innerHTML = deposits.map(d => `
+                <tr>
+                    <td>#${d.id}</td>
+                    <td>${getUserEmail(d.userId)}</td>
+                    <td>${d.method}</td>
+                    <td>৳ ${d.amount}</td>
+                    <td>${d.txId}</td>
+                    <td>${d.date}</td>
+                    <td class="status-${d.status}">${d.status}</td>
+                    <td>
+                        ${d.status === 'pending' ? `
+                            <button class="btn btn-sm btn-success" onclick="approveDeposit(${d.id})">অ্যাপ্রুভ</button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectDeposit(${d.id})">রিজেক্ট</button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `).reverse().join('');
+        }
+
+        // Load topup requests
+        function loadTopupRequests(filter = 'all') {
+            let topups = transactions.filter(t => t.type === 'topup');
+            
+            if(filter !== 'all') {
+                topups = topups.filter(t => t.status === filter);
+            }
+            
+            const tbody = document.getElementById('topupRequests');
+            tbody.innerHTML = topups.map(t => `
+                <tr>
+                    <td>#${t.id}</td>
+                    <td>${getUserEmail(t.userId)}</td>
+                    <td>${t.uid}</td>
+                    <td>${t.diamonds}</td>
+                    <td>৳ ${t.amount}</td>
+                    <td>${t.date}</td>
+                    <td class="status-${t.status}">${t.status}</td>
+                    <td>
+                        ${t.status === 'pending' ? `
+                            <button class="btn btn-sm btn-success" onclick="completeTopup(${t.id})">সম্পূর্ণ</button>
+                            <button class="btn btn-sm btn-danger" onclick="failTopup(${t.id})">ব্যর্থ</button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `).reverse().join('');
+        }
+
+        // Load users
+        function loadUsers() {
+            const tbody = document.getElementById('usersList');
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td>#${u.id}</td>
+                    <td>${u.name}</td>
+                    <td>${u.email}</td>
+                    <td>${u.playerId}</td>
+                    <td>৳ ${u.balance}</td>
+                    <td>${new Date().toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editUser(${u.id})">এডিট</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Load settings
+        function loadSettings() {
+            document.getElementById('siteName').value = settings.siteName;
+            document.getElementById('adminEmail').value = settings.adminEmail;
+            document.getElementById('paymentNumber').value = settings.paymentNumber;
+        }
+
+        // Helper function to get user email
+        function getUserEmail(userId) {
+            const user = users.find(u => u.id === userId);
+            return user ? user.email : 'Unknown';
+        }
+
+        // Approve deposit
+        function approveDeposit(id) {
+            const deposit = transactions.find(t => t.id === id);
+            if(deposit) {
+                deposit.status = 'approved';
+                
+                // Add balance to user
+                const user = users.find(u => u.id === deposit.userId);
+                if(user) {
+                    user.balance += deposit.amount;
+                }
+                
+                saveData();
+                loadDepositRequests();
+                updateStats();
+                alert('ডিপোজিট অ্যাপ্রুভ করা হয়েছে!');
+            }
+        }
+
+        // Reject deposit
+        function rejectDeposit(id) {
+            if(confirm('আপনি কি এই ডিপোজিট রিজেক্ট করতে চান?')) {
+                const deposit = transactions.find(t => t.id === id);
+                if(deposit) {
+                    deposit.status = 'rejected';
+                    saveData();
+                    loadDepositRequests();
+                    alert('ডিপোজিট রিজেক্ট করা হয়েছে!');
+                }
+            }
+        }
+
+        // Complete topup
+        function completeTopup(id) {
+            const topup = transactions.find(t => t.id === id);
+            if(topup) {
+                topup.status = 'completed';
+                saveData();
+                loadTopupRequests();
+                alert('টপআপ সম্পূর্ণ হয়েছে!');
+            }
+        }
+
+        // Fail topup
+        function failTopup(id) {
+            if(confirm('আপনি কি এই টপআপ ব্যর্থ হিসেবে চিহ্নিত করতে চান?')) {
+                const topup = transactions.find(t => t.id === id);
+                if(topup) {
+                    topup.status = 'failed';
+                    
+                    // Refund user
+                    const user = users.find(u => u.id === topup.userId);
+                    if(user) {
+                        user.balance += topup.amount;
+                    }
+                    
+                    saveData();
+                    loadTopupRequests();
+                    updateStats();
+                    alert('টপআপ ব্যর্থ হয়েছে!');
+                }
+            }
+        }
+
+        // Filter deposits
+        function filterDeposits() {
+            const filter = document.getElementById('depositFilter').value;
+            loadDepositRequests(filter);
+        }
+
+        // Filter topups
+        function filterTopups() {
+            const filter = document.getElementById('topupFilter').value;
+            loadTopupRequests(filter);
+        }
+
+        // Search users
+        function searchUsers() {
+            const query = document.getElementById('userSearch').value.toLowerCase();
+            const filtered = users.filter(u => 
+                u.name.toLowerCase().includes(query) || 
+                u.email.toLowerCase().includes(query)
+            );
+            
+            const tbody = document.getElementById('usersList');
+            tbody.innerHTML = filtered.map(u => `
+                <tr>
+                    <td>#${u.id}</td>
+                    <td>${u.name}</td>
+                    <td>${u.email}</td>
+                    <td>${u.playerId}</td>
+                    <td>৳ ${u.balance}</td>
+                    <td>${new Date().toLocaleDateString()}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editUser(${u.id})">এডিট</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Save settings
+        function saveSettings() {
+            settings = {
+                siteName: document.getElementById('siteName').value,
+                adminEmail: document.getElementById('adminEmail').value,
+                paymentNumber: document.getElementById('paymentNumber').value
+            };
+            
+            localStorage.setItem('topup_settings', JSON.stringify(settings));
+            alert('সেটিংস সেভ করা হয়েছে!');
+        }
+
+        // Save all data
+        function saveData() {
+            localStorage.setItem('topup_users', JSON.stringify(users));
+            localStorage.setItem('topup_transactions', JSON.stringify(transactions));
+        }
+
+        // Show tab content
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Deactivate all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Activate clicked button
+            event.target.classList.add('active');
+            
+            // Refresh data if needed
+            if(tabName === 'dashboard') {
+                updateStats();
+                loadRecentTransactions();
+            } else if(tabName === 'deposits') {
+                loadDepositRequests();
+            } else if(tabName === 'topups') {
+                loadTopupRequests();
+            } else if(tabName === 'users') {
+                loadUsers();
+            }
+        }
+
+        // Initialize on load
+        window.onload = initAdminPanel;
+    </script>
+</body>
+</html>
