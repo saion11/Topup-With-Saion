@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topup With Saion</title>
+    <style>
+        :root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --success: #4CAF50;
+            --danger: #F44336;
+            --dark: #222;
+            --light: #f8f9fa;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 0 0 15px 15px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .auth-form {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        .dashboard {
+            display: none;
+        }
+        .balance-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .balance-amount {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        .deposit-info {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .method-card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .method-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+        }
+        .method-card.selected {
+            border-color: var(--primary);
+        }
+        .method-card img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+        .topup-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .topup-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .topup-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        .topup-card img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+        .topup-card .price {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--success);
+            margin: 10px 0;
+        }
+        .transactions {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        .positive {
+            color: var(--success);
+        }
+        .negative {
+            color: var(--danger);
+        }
+        .nav {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .nav-btn {
+            padding: 10px 20px;
+            background: #ddd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .nav-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .hidden {
+            display: none;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+            background-color: var(--dark);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">Topup With Saion</div>
+        <p>বিকাশ/নগদ/রকেটে ডিপোজিট করে ফ্রি ফায়ার ডায়মন্ড কিনুন</p>
+    </header>
+
+    <div class="container">
+        <!-- Login/Register Forms -->
+        <div id="authSection">
+            <div class="auth-container">
+                <div class="auth-form" id="loginForm">
+                    <h2>Login</h2>
+                    <form>
+                        <div class="form-group">
+                            <label for="loginEmail">Email or Player ID</label>
+                            <input type="text" id="loginEmail" placeholder="Enter your email or ID">
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Password</label>
+                            <input type="password" id="loginPassword" placeholder="Enter your password">
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="login()">Login</button>
+                    </form>
+                </div>
+
+                <div class="auth-form" id="registerForm">
+                    <h2>Register</h2>
+                    <form>
+                        <div class="form-group">
+                            <label for="regName">Full Name</label>
+                            <input type="text" id="regName" placeholder="Enter your full name">
+                        </div>
+                        <div class="form-group">
+                            <label for="regEmail">Email</label>
+                            <input type="email" id="regEmail" placeholder="Enter your email">
+                        </div>
+                        <div class="form-group">
+                            <label for="regPassword">Password</label>
+                            <input type="password" id="regPassword" placeholder="Create a password">
+                        </div>
+                        <div class="form-group">
+                            <label for="regPlayerID">Free Fire Player ID</label>
+                            <input type="text" id="regPlayerID" placeholder="Enter your Player ID">
+                        </div>
+                        <button type="button" class="btn btn-primary" onclick="register()">Register</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard (Visible after login) -->
+        <div id="dashboard" class="hidden">
+            <div class="nav">
+                <button class="nav-btn active" onclick="showTab('balance')">ব্যালেন্স</button>
+                <button class="nav-btn" onclick="showTab('deposit')">ডিপোজিট</button>
+                <button class="nav-btn" onclick="showTab('topup')">টপআপ</button>
+                <button class="nav-btn" onclick="showTab('history')">ইতিহাস</button>
+                <button class="nav-btn" onclick="logout()">লগআউট</button>
+            </div>
+
+            <!-- Balance Tab -->
+            <div id="balanceTab" class="tab-content active">
+                <div class="balance-card">
+                    <h2>আপনার ব্যালেন্স</h2>
+                    <div class="balance-amount">৳ <span id="currentBalance">0.00</span></div>
+                    <p>টপআপ করতে ডিপোজিট ট্যাবে যান</p>
+                </div>
+            </div>
+
+            <!-- Deposit Tab -->
+            <div id="depositTab" class="tab-content">
+                <div class="deposit-info">
+                    <h2>ডিপোজিট করুন</h2>
+                    <p>নিচের যেকোনো পেমেন্ট মেথডে টাকা সেন্ড করুন</p>
+                    
+                    <div class="payment-methods">
+                        <div class="method-card" onclick="selectPaymentMethod('bkash')">
+                            <img src="https://via.placeholder.com/100/6e48aa/FFFFFF?text=BKASH" alt="Bkash">
+                            <h3>বিকাশ</h3>
+                            <p>01911276328</p>
+                        </div>
+                        <div class="method-card" onclick="selectPaymentMethod('nagad')">
+                            <img src="https://via.placeholder.com/100/9d50bb/FFFFFF?text=NAGAD" alt="Nagad">
+                            <h3>নগদ</h3>
+                            <p>01911276328</p>
+                        </div>
+                        <div class="method-card" onclick="selectPaymentMethod('rocket')">
+                            <img src="https://via.placeholder.com/100/4CAF50/FFFFFF?text=ROCKET" alt="Rocket">
+                            <h3>রকেট</h3>
+                            <p>01911276328</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="depositAmount">টাকার পরিমাণ (৳)</label>
+                        <input type="number" id="depositAmount" placeholder="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="transactionId">ট্রানজেকশন আইডি</label>
+                        <input type="text" id="transactionId" placeholder="TXID">
+                    </div>
+                    <div class="form-group">
+                        <label for="depositPhone">আপনার মোবাইল নম্বর</label>
+                        <input type="text" id="depositPhone" placeholder="01XXXXXXXXX">
+                    </div>
+                    <button class="btn btn-primary" onclick="submitDeposit()">ডিপোজিট রিকোয়েস্ট পাঠান</button>
+                </div>
+            </div>
+
+            <!-- Topup Tab -->
+            <div id="topupTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">ডায়মন্ড প্যাকেজ</h2>
+                <div class="topup-container">
+                    <div class="topup-card">
+                        <img src="https://via.placeholder.com/100" alt="Diamond Package">
+                        <h3>100 Diamonds</h3>
+                        <div class="price">৳ 100.00</div>
+                        <button class="btn btn-primary" onclick="buyDiamonds(100, 100)">কিনুন</button>
+                    </div>
+                    <div class="topup-card">
+                        <img src="https://via.placeholder.com/100" alt="Diamond Package">
+                        <h3>310 Diamonds</h3>
+                        <div class="price">৳ 300.00</div>
+                        <button class="btn btn-primary" onclick="buyDiamonds(310, 300)">কিনুন</button>
+                    </div>
+                    <div class="topup-card">
+                        <img src="https://via.placeholder.com/100" alt="Diamond Package">
+                        <h3>520 Diamonds</h3>
+                        <div class="price">৳ 500.00</div>
+                        <button class="btn btn-primary" onclick="buyDiamonds(520, 500)">কিনুন</button>
+                    </div>
+                    <div class="topup-card">
+                        <img src="https://via.placeholder.com/100" alt="Diamond Package">
+                        <h3>1060 Diamonds</h3>
+                        <div class="price">৳ 1000.00</div>
+                        <button class="btn btn-primary" onclick="buyDiamonds(1060, 1000)">কিনুন</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="historyTab" class="tab-content">
+                <h2 style="margin-bottom: 20px;">লেনদেনের ইতিহাস</h2>
+                <div class="transactions" id="transactionHistory">
+                    <!-- Transactions will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2023 Topup With Saion. All rights reserved.</p>
+        <p>Contact: saion@example.com | 01911276328</p>
+    </footer>
+
+    <script>
+        // User data
+        let currentUser = null;
+        let users = JSON.parse(localStorage.getItem('topup_users')) || [];
+        let transactions = JSON.parse(localStorage.getItem('topup_transactions')) || [];
+        let selectedPaymentMethod = null;
+
+        // DOM Elements
+        const authSection = document.getElementById('authSection');
+        const dashboard = document.getElementById('dashboard');
+        const currentBalanceEl = document.getElementById('currentBalance');
+        const transactionHistoryEl = document.getElementById('transactionHistory');
+
+        // Initialize with demo data if empty
+        if(users.length === 0) {
+            users = [
+                {
+                    id: 1,
+                    name: "Saion",
+                    email: "saion@example.com",
+                    password: "123456",
+                    playerId: "1234567890",
+                    balance: 1000
+                }
+            ];
+            localStorage.setItem('topup_users', JSON.stringify(users));
+        }
+
+        // Login function
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if(user) {
+                currentUser = user;
+                authSection.classList.add('hidden');
+                dashboard.classList.remove('hidden');
+                updateDashboard();
+            } else {
+                alert('Invalid email or password!');
+            }
+        }
+
+        // Register function
+        function register() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const playerId = document.getElementById('regPlayerID').value;
+            
+            if(!name || !email || !password || !playerId) {
+                alert('Please fill all fields!');
+                return;
+            }
+            
+            const newUser = {
+                id: Date.now(),
+                name,
+                email,
+                password,
+                playerId,
+                balance: 0
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('topup_users', JSON.stringify(users));
+            
+            alert('Registration successful! Please login.');
+            document.getElementById('loginEmail').value = email;
+            document.getElementById('loginPassword').value = password;
+        }
+
+        // Logout function
+        function logout() {
+            currentUser = null;
+            authSection.classList.remove('hidden');
+            dashboard.classList.add('hidden');
+            document.getElementById('loginEmail').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        // Select payment method
+        function selectPaymentMethod(method) {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.method-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
+        // Submit deposit request
+        function submitDeposit() {
+            if(!selectedPaymentMethod) {
+                alert('Please select a payment method!');
+                return;
+            }
+            
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const txId = document.getElementById('transactionId').value;
+            const phone = document.getElementById('depositPhone').value;
+            
+            if(!amount || !txId || !phone) {
+                alert('Please fill all fields!');
+                return;
+            }
+            
+            if(amount <= 0) {
+                alert('Amount must be greater than 0!');
+                return;
+            }
+            
+            const transaction = {
+                id: Date.now(),
+                type: 'deposit',
+                userId: currentUser.id,
+                method: selectedPaymentMethod,
+                amount,
+                txId,
+                phone,
+                status: 'pending',
+                date: new Date().toLocaleString()
+            };
+            
+            transactions.push(transaction);
+            localStorage.setItem('topup_transactions', JSON.stringify(transactions));
+            
+            alert('Deposit request submitted! It will be processed within 1 hour.');
+            
+            // Reset form
+            document.getElementById('depositAmount').value = '';
+            document.getElementById('transactionId').value = '';
+            document.getElementById('depositPhone').value = '';
+            document.querySelectorAll('.method-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            selectedPaymentMethod = null;
+        }
+
+        // Buy diamonds
+        function buyDiamonds(diamonds, price) {
+            if(currentUser.balance < price) {
+                alert('Insufficient balance!');
+                return;
+            }
+            
+            const uid = prompt('Enter your Free Fire UID:');
+            if(!uid) return;
+            
+            currentUser.balance -= price;
+            
+            const transaction = {
+                id: Date.now(),
+                type: 'topup',
+                userId: currentUser.id,
+                diamonds,
+                amount: price,
+                uid,
+                status: 'completed',
+                date: new Date().toLocaleString()
+            };
+            
+            transactions.push(transaction);
+            
+            // Update user data
+            const userIndex = users.findIndex(u => u.id === currentUser.id);
+            users[userIndex] = currentUser;
+            
+            localStorage.setItem('topup_users', JSON.stringify(users));
+            localStorage.setItem('topup_transactions', JSON.stringify(transactions));
+            
+            alert(`Success! ${diamonds} diamonds will be added to UID: ${uid} within 10 minutes.`);
+            updateDashboard();
+        }
+
+        // Update dashboard
+        function updateDashboard() {
+            currentBalanceEl.textContent = currentUser.balance.toFixed(2);
+            
+            // Filter user transactions
+            const userTransactions = transactions.filter(t => t.userId === currentUser.id);
+            
+            // Display transactions
+            transactionHistoryEl.innerHTML = userTransactions.map(t => `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <h3>${t.type === 'deposit' ? 'Deposit' : t.diamonds + ' Diamonds'}</h3>
+                        <p>${t.date}</p>
+                        ${t.type === 'deposit' ? `<p>Method: ${t.method}</p>` : `<p>UID: ${t.uid}</p>`}
+                        ${t.type === 'deposit' ? `<p>Status: ${t.status}</p>` : ''}
+                    </div>
+                    <div class="transaction-amount ${t.type === 'deposit' ? 'positive' : 'negative'}">
+                        ${t.type === 'deposit' ? '+' : '-'}৳ ${t.amount.toFixed(2)}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show tab content
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Deactivate all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            
+            // Activate clicked button
+            event.target.classList.add('active');
+        }
+
+        // Initialize
+        function init() {
+            // Check if already logged in
+            const loggedInUserId = localStorage.getItem('loggedInUserId');
+            if(loggedInUserId) {
+                const user = users.find(u => u.id == loggedInUserId);
+                if(user) {
+                    currentUser = user;
+                    authSection.classList.add('hidden');
+                    dashboard.classList.remove('hidden');
+                    updateDashboard();
+                }
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
